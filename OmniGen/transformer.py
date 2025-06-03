@@ -15,7 +15,8 @@ from transformers.modeling_outputs import (
     TokenClassifierOutput,
 )
 from transformers.modeling_utils import PreTrainedModel
-from transformers import Phi3Config, Phi3Model
+from .phi3bp import Phi3Model
+from transformers import Phi3Config
 from transformers.cache_utils import Cache, DynamicCache, StaticCache
 from transformers.utils import logging
 
