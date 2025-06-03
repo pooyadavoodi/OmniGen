@@ -172,3 +172,4 @@ local.ipynb
 convert_to_safetensor.py
 test_memory_time.py
 test.py
+.vscode/
