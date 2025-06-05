@@ -18,6 +18,7 @@ from diffusers.utils import (
     unscale_lora_layers,
 )
 from safetensors.torch import load_file
+import time
 
 from OmniGen import OmniGen, OmniGenProcessor, OmniGenScheduler
 
@@ -218,7 +219,9 @@ class OmniGenPipeline:
         else:
             self.disable_model_cpu_offload()
 
+        start_time = time.time()
         input_data = self.processor(prompt, input_images, height=height, width=width, use_img_cfg=use_img_guidance, separate_cfg_input=separate_cfg_infer, use_input_image_size_as_output=use_input_image_size_as_output)
+        print(f"Time taken for processor: {time.time() - start_time}")
 
         num_prompt = len(prompt)
         num_cfg = 2 if use_img_guidance else 1
@@ -236,6 +239,7 @@ class OmniGenPipeline:
         latents = torch.randn(num_prompt, 4, latent_size_h, latent_size_w, device=self.device, generator=generator)
         latents = torch.cat([latents]*(1+num_cfg), 0).to(dtype)
 
+        start_time = time.time()
         if input_images is not None and self.model_cpu_offload: self.vae.to(self.device)
         input_img_latents = []
         if separate_cfg_infer:
@@ -253,6 +257,7 @@ class OmniGenPipeline:
             self.vae.to('cpu')
             torch.cuda.empty_cache()  # Clear VRAM
             gc.collect()  # Run garbage collection to free system RAM
+        print(f"Time taken for vae encode: {time.time() - start_time}")
 
         model_kwargs = dict(input_ids=self.move_to_device(input_data['input_ids']), 
             input_img_latents=input_img_latents, 
@@ -282,15 +287,18 @@ class OmniGenPipeline:
         # else:
         #     self.model.to(self.device)
 
+        start_time = time.time()
         scheduler = OmniGenScheduler(num_steps=num_inference_steps)
         samples = scheduler(latents, func, model_kwargs, use_kv_cache=use_kv_cache, offload_kv_cache=offload_kv_cache)
         samples = samples.chunk((1+num_cfg), dim=0)[0]
+        print(f"Time taken for scheduler: {time.time() - start_time}")
 
         if self.model_cpu_offload:
             self.model.to('cpu')
             torch.cuda.empty_cache()  
             gc.collect()  
 
+        start_time = time.time()
         self.vae.to(self.device)
         samples = samples.to(torch.float32)
         if self.vae.config.shift_factor is not None:
@@ -298,6 +306,7 @@ class OmniGenPipeline:
         else:
             samples = samples / self.vae.config.scaling_factor   
         samples = self.vae.decode(samples).sample
+        print(f"Time taken for vae decode: {time.time() - start_time}")
 
         if self.model_cpu_offload:
             self.vae.to('cpu')
