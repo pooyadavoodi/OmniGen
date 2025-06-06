@@ -1,7 +1,7 @@
 from tqdm import tqdm
 from typing import Optional, Dict, Any, Tuple, List
 import gc
-
+import time
 import torch
 from transformers.cache_utils import Cache, DynamicCache, OffloadedCache
 
@@ -161,7 +161,11 @@ class OmniGenScheduler:
         results = {}
         for i in tqdm(range(self.num_steps)):
             timesteps = torch.zeros(size=(len(z), )).to(z.device) + self.sigma[i]
+            
+            start_time = time.time()
             pred, cache = func(z, timesteps, past_key_values=cache, **model_kwargs)
+            print(f"Time taken for step {i}: {time.time() - start_time}")
+
             sigma_next = self.sigma[i+1]
             sigma = self.sigma[i]
             z = z + (sigma_next - sigma) * pred

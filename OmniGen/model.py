@@ -5,6 +5,7 @@ import torch.nn as nn
 import numpy as np
 import math
 from typing import Dict
+import time
 
 from diffusers.loaders import PeftAdapterMixin
 from timm.models.vision_transformer import PatchEmbed, Attention, Mlp
@@ -335,7 +336,10 @@ class OmniGen(nn.Module, PeftAdapterMixin):
         else:
             input_emb = torch.cat([time_token, x], dim=1)
 
+        start_time = time.time()
         output = self.llm(inputs_embeds=input_emb, attention_mask=attention_mask, position_ids=position_ids, past_key_values=past_key_values, offload_model=offload_model)
+        print(f"Time taken for LLM: {time.time() - start_time}")
+
         output, past_key_values = output.last_hidden_state, output.past_key_values
         if input_is_list:
             image_embedding = output[:, -max(num_tokens):]
