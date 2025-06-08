@@ -1,19 +1,20 @@
 from OmniGen import OmniGenPipeline
 import logging
+import torch
 
 logging.basicConfig(level=logging.DEBUG)
 
 pipe = OmniGenPipeline.from_pretrained("Shitao/OmniGen-v1")
 
 # Text to Image
-images = pipe(
-    prompt="A curly-haired man in a red shirt is drinking tea.", 
-    height=1024, 
-    width=1024, 
-    guidance_scale=2.5,
-    seed=0,
-)
-images[0].save("example_t2i.png")  # save output PIL Image
+# images = pipe(
+#     prompt="A curly-haired man in a red shirt is drinking tea.", 
+#     height=1024, 
+#     width=1024, 
+#     guidance_scale=2.5,
+#     seed=0,
+# )
+# images[0].save("example_t2i.png")  # save output PIL Image
 
 # Multi-modal to Image
 # In prompt, we use the placeholder to represent the image. The image placeholder should be in the format of <img><|image_*|></img>
@@ -23,14 +24,17 @@ images = pipe(
     input_images=["./imgs/test_cases/two_man.jpg"],
     height=1024, 
     width=1024,
-    guidance_scale=2.5, 
+    num_inference_steps=50,
+    guidance_scale=2.5,
+    use_img_guidance=True,
     img_guidance_scale=1.6,
     max_input_image_size=1024,
     separate_cfg_infer=True, 
-    use_kv_cache=True,
-    offload_kv_cache=True,
     offload_model=False,
+    use_kv_cache=True,
+    offload_kv_cache=False,
     use_input_image_size_as_output=False,
+    dtype=torch.bfloat16,
     seed=0,
 )
 images[0].save("example_ti2i.png")  # save output PIL image
