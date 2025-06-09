@@ -305,7 +305,7 @@ class OmniGenSeparateCollator(OmniGenCollator):
 
         padded_input_ids, position_ids, attention_mask, padding_images, pixel_values, image_sizes = self.process_mllm_input(mllm_inputs, target_img_size)
         all_padded_input_ids.append(padded_input_ids)
-        all_attention_mask.append(attention_mask)
+        all_attention_mask.append(attention_mask.to(torch.bfloat16))
         all_position_ids.append(position_ids)
         all_pixel_values.append(pixel_values)
         all_image_sizes.append(image_sizes)
@@ -314,7 +314,7 @@ class OmniGenSeparateCollator(OmniGenCollator):
         if cfg_mllm_inputs[0] is not None:
             padded_input_ids, position_ids, attention_mask, padding_images, pixel_values, image_sizes = self.process_mllm_input(cfg_mllm_inputs, target_img_size)
             all_padded_input_ids.append(padded_input_ids)
-            all_attention_mask.append(attention_mask)
+            all_attention_mask.append(attention_mask.to(torch.bfloat16))
             all_position_ids.append(position_ids)
             all_pixel_values.append(pixel_values)
             all_image_sizes.append(image_sizes)
@@ -322,7 +322,7 @@ class OmniGenSeparateCollator(OmniGenCollator):
         if img_cfg_mllm_input[0] is not None:
             padded_input_ids, position_ids, attention_mask, padding_images, pixel_values, image_sizes = self.process_mllm_input(img_cfg_mllm_input, target_img_size)
             all_padded_input_ids.append(padded_input_ids)
-            all_attention_mask.append(attention_mask)
+            all_attention_mask.append(attention_mask.to(torch.bfloat16))
             all_position_ids.append(position_ids)
             all_pixel_values.append(pixel_values)
             all_image_sizes.append(image_sizes)

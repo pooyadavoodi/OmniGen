@@ -163,7 +163,8 @@ class OmniGenScheduler:
             timesteps = torch.zeros(size=(len(z), )).to(z.device) + self.sigma[i]
             
             start_time = time.time()
-            pred, cache = func(z, timesteps, past_key_values=cache, **model_kwargs)
+            with torch.autocast(device_type='cuda', dtype=torch.bfloat16):
+                pred, cache = func(z, timesteps, past_key_values=cache, **model_kwargs)        
             print(f"Time taken for step {i}: {time.time() - start_time}")
 
             sigma_next = self.sigma[i+1]

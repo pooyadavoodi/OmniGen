@@ -52,6 +52,7 @@ logger = logging.get_logger(__name__)
 _CHECKPOINT_FOR_DOC = "microsoft/Phi-3-mini-4k-instruct"
 _CONFIG_FOR_DOC = "Phi3Config"
 
+torch._dynamo.config.cache_size_limit = 1024
 
 # Copied from transformers.models.llama.modeling_llama.LlamaRMSNorm with Llama->Phi3
 class Phi3RMSNorm(nn.Module):
@@ -665,6 +666,7 @@ class Phi3DecoderLayer(nn.Module):
         self.resid_mlp_dropout = nn.Dropout(config.resid_pdrop)
         self.post_attention_layernorm = Phi3RMSNorm(config.hidden_size, eps=config.rms_norm_eps)
 
+    @torch.compile(fullgraph=True)
     def forward(
         self,
         hidden_states: torch.Tensor,
